@@ -15,12 +15,29 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import requests as _requests
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import LicenseKey, LoginEvent
+
+
+def _lookup_region(ip: str) -> Optional[str]:
+    """Resolve a country name from an IP via ipapi.co. Silently returns None on any failure."""
+    try:
+        if not ip or ip in ("unknown", "127.0.0.1", "::1"):
+            return None
+        resp = _requests.get(f"https://ipapi.co/{ip}/country_name/", timeout=3)
+        if resp.status_code == 200:
+            text = resp.text.strip()
+            if text and text.lower() not in ("undefined", "", "none"):
+                return text
+    except Exception:
+        pass
+    return None
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -193,14 +210,18 @@ def validate_license(
 
     if license_key.first_login_at is None:
         license_key.first_login_at = now
-        # Capture the region on the very first login
-        if payload.region and license_key.first_region is None:
-            license_key.first_region = payload.region
 
     license_key.last_login_at = now
     license_key.last_ip = client_ip
     license_key.is_online = True
     license_key.logins_last_24h = (license_key.logins_last_24h or 0) + 1
+
+    # Resolve region: prefer client-supplied value, fall back to IP geo-lookup
+    resolved_region: Optional[str] = payload.region or _lookup_region(client_ip)
+
+    if license_key.first_login_at is None or license_key.first_region is None:
+        if resolved_region and license_key.first_region is None:
+            license_key.first_region = resolved_region
 
     # Record login event
     event = LoginEvent(
@@ -208,7 +229,7 @@ def validate_license(
         logged_at      = now,
         ip_address     = client_ip,
         hwid           = payload.hwid,
-        region         = payload.region,
+        region         = resolved_region,
         device_name    = payload.device_name,
     )
     db.add(event)
@@ -216,7 +237,7 @@ def validate_license(
     # ------------------------------------------------------------------
     # 5. Suspicious-activity analysis (multi-rule)
     # ------------------------------------------------------------------
-    incoming_region: Optional[str] = payload.region
+    incoming_region: Optional[str] = resolved_region
 
     # Rule A: Same key connecting from 3+ different regions within 1 hour
     if incoming_region and incoming_region != license_key.last_region:
