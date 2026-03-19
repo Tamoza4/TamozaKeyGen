@@ -64,7 +64,7 @@ async function apiFetch(path, opts = {}) {
     // Expired / invalid token → send back to login
     if (response.status === 401) {
       localStorage.removeItem(TOKEN_KEY);
-      window.location.href = 'index.html';
+      window.location.href = 'login.html';
       return;
     }
     let detail = `HTTP ${response.status}`;
@@ -1140,7 +1140,7 @@ document.getElementById('extendOverlay').addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   // Guard: redirect to login if no token is present
   if (!localStorage.getItem(TOKEN_KEY)) {
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
     return;
   }
 

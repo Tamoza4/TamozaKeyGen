@@ -1,232 +1,514 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TamozaKeyGen — Admin Login</title>
+  <title>TamozaKeyGen — License Management System</title>
 
+  <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif'] } } }
     };
-    // Apply saved theme before render to avoid flash
-    if (localStorage.getItem('theme') === 'dark' ||
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Default dark unless user explicitly chose light
+    if (localStorage.getItem('theme') !== 'light') {
       document.documentElement.classList.add('dark');
     }
   </script>
+
+  <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
-    *, *::before, *::after { transition: background-color 0.2s, border-color 0.2s, color 0.15s; }
-    .card-enter { animation: cardIn 0.3s cubic-bezier(0.16,1,0.3,1); }
-    @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .shake { animation: shake 0.4s ease; }
-    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    html { scroll-behavior: smooth; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-glow {
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.13) 0%, transparent 70%);
+    }
+
+    .card-hover {
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(99,102,241,0.15);
+      border-color: rgba(99,102,241,0.45);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(99,102,241,0.02) 100%);
+    }
+
+    .nav-blur {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .float { animation: float 4s ease-in-out infinite; }
+
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Syntax token colours */
+    .tok-kw  { color: #c084fc; }
+    .tok-mod { color: #67e8f9; }
+    .tok-str { color: #86efac; }
+    .tok-op  { color: #f472b6; }
+    .tok-fn  { color: #fde68a; }
+    .tok-num { color: #fb923c; }
+    .tok-cmt { color: #4b5563; }
   </style>
 </head>
 
-<body class="min-h-screen bg-gray-100 dark:bg-gray-950 font-sans flex items-center justify-center px-4">
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
 
-  <!-- Dark mode toggle (top-right) -->
-  <button id="darkToggle" title="Toggle dark mode"
-      class="fixed top-4 right-4 p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 transition shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-    <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
-    </svg>
-    <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
-    </svg>
-  </button>
+  <!-- ══════════════════════════════════════════════════════════════════
+       HEADER / NAV
+  ══════════════════════════════════════════════════════════════════════ -->
+  <header class="fixed top-0 left-0 right-0 z-50">
+    <div class="nav-blur bg-gray-950/80 border-b border-gray-800/50">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
 
-  <!-- Login Card -->
-  <div class="card-enter w-full max-w-sm">
+          <!-- Logo -->
+          <a href="#" class="flex items-center gap-2.5 group">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-shadow">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+              </svg>
+            </div>
+            <span class="text-white font-bold text-lg tracking-tight">TamozaKeyGen</span>
+          </a>
 
-    <!-- Logo + Title -->
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30 mb-4">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <!-- Desktop nav links -->
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="#features" class="text-sm text-gray-400 hover:text-white transition-colors duration-200">Features</a>
+            <a href="#api"      class="text-sm text-gray-400 hover:text-white transition-colors duration-200">API</a>
+            <a href="#stats"    class="text-sm text-gray-400 hover:text-white transition-colors duration-200">Stats</a>
+            <a href="#contact"  class="text-sm text-gray-400 hover:text-white transition-colors duration-200">Contact</a>
+          </nav>
+
+          <!-- Right side -->
+          <div class="flex items-center gap-3">
+            <!-- Mobile hamburger -->
+            <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+              </svg>
+            </button>
+
+            <!-- Admin Login button -->
+            <a href="login.html"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-500/60 text-indigo-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 text-sm font-medium transition-all duration-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+              </svg>
+              Admin Login
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden nav-blur bg-gray-900/95 border-b border-gray-800/50">
+      <div class="px-6 py-4 flex flex-col gap-4">
+        <a href="#features" class="text-sm text-gray-300 hover:text-white transition-colors">Features</a>
+        <a href="#api"      class="text-sm text-gray-300 hover:text-white transition-colors">API</a>
+        <a href="#stats"    class="text-sm text-gray-300 hover:text-white transition-colors">Stats</a>
+        <a href="#contact"  class="text-sm text-gray-300 hover:text-white transition-colors">Contact</a>
+        <a href="login.html" class="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Admin Login →</a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       HERO SECTION
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden hero-glow pt-16">
+
+    <!-- Background grid -->
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.05)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black_40%,transparent_100%)]"></div>
+
+    <!-- Ambient glow orb -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-5xl mx-auto px-6 lg:px-8 text-center py-24">
+
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium mb-8 fade-in-up">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+        Enterprise License Management &mdash; Production Ready
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] mb-6 fade-in-up" style="transition-delay:0.1s">
+        Secure Your Software,<br/>
+        <span class="gradient-text">Manage Your Growth.</span>
+      </h1>
+
+      <!-- Sub-headline -->
+      <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed fade-in-up" style="transition-delay:0.2s">
+        The ultimate all-in-one license management system with HWID locking, forensic tracking, and universal API integration.
+      </p>
+
+      <!-- CTA buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 fade-in-up" style="transition-delay:0.3s">
+        <a href="login.html"
+           class="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-200">
+          Get Started
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+          </svg>
+        </a>
+        <a href="api-docs.html"
+           class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 hover:border-white/20 transition-all duration-200">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+          View Documentation
+        </a>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="flex flex-wrap items-center justify-center gap-6 mt-14 fade-in-up" style="transition-delay:0.4s">
+        <div class="flex items-center gap-2 text-xs text-gray-500">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          JWT Secured
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-500">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          HWID Binding
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-500">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Multi-Platform SDK
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-500">
+          <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Real-time Analytics
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-gray-700 animate-bounce">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+      </svg>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       FEATURES SECTION
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="features" class="py-24 lg:py-32 bg-gray-950">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+      <!-- Header -->
+      <div class="text-center mb-16 fade-in-up">
+        <p class="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">Features</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Everything You Need to Protect Your Software</h2>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">Built for developers who take software security seriously.</p>
+      </div>
+
+      <!-- 4 main cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+
+        <!-- HWID Locking -->
+        <div class="card-hover group relative p-6 rounded-2xl bg-gray-900/60 border border-gray-800 fade-in-up">
+          <div class="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-base mb-2">HWID Locking</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Prevent unauthorized sharing by binding license keys to specific hardware fingerprints. Each key locks to one machine.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-b-2xl"></div>
+        </div>
+
+        <!-- Forensic Tracking -->
+        <div class="card-hover group relative p-6 rounded-2xl bg-gray-900/60 border border-gray-800 fade-in-up" style="transition-delay:0.05s">
+          <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-5 group-hover:bg-violet-500/20 transition-colors">
+            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-base mb-2">Forensic Tracking</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Deep insights into every validation — IP addresses, login regions, device histories, and behavioral patterns, all in one view.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-b-2xl"></div>
+        </div>
+
+        <!-- Anti-Fraud -->
+        <div class="card-hover group relative p-6 rounded-2xl bg-gray-900/60 border border-gray-800 fade-in-up" style="transition-delay:0.1s">
+          <div class="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5 group-hover:bg-red-500/20 transition-colors">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"/>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-base mb-2">Anti-Fraud System</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Automated detection of suspicious activity — region hopping, multi-device abuse, and unusual usage patterns trigger real-time alerts.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-b-2xl"></div>
+        </div>
+
+        <!-- Universal API -->
+        <div class="card-hover group relative p-6 rounded-2xl bg-gray-900/60 border border-gray-800 fade-in-up" style="transition-delay:0.15s">
+          <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition-colors">
+            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-base mb-2">Universal API</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Ready-to-use SDKs for C# and Python with a clean REST API. Validate license keys in any language with under 100 lines of code.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-b-2xl"></div>
+        </div>
+      </div>
+
+      <!-- Secondary feature pills -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 rounded-xl bg-gray-900/40 border border-gray-800/60 flex items-center gap-3 fade-in-up">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">Key Expiry &amp; Extension</span>
+        </div>
+        <div class="p-4 rounded-xl bg-gray-900/40 border border-gray-800/60 flex items-center gap-3 fade-in-up" style="transition-delay:0.05s">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286z"/></svg>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">Permission Levels</span>
+        </div>
+        <div class="p-4 rounded-xl bg-gray-900/40 border border-gray-800/60 flex items-center gap-3 fade-in-up" style="transition-delay:0.1s">
+          <div class="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">Live Usage Metrics</span>
+        </div>
+        <div class="p-4 rounded-xl bg-gray-900/40 border border-gray-800/60 flex items-center gap-3 fade-in-up" style="transition-delay:0.15s">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9"/></svg>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">Admin Notes &amp; Audit Log</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       API / SDK SECTION
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="api" class="py-24 lg:py-32 bg-[#080c14]">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+        <!-- Left: text -->
+        <div class="fade-in-up">
+          <p class="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-3">API &amp; SDK</p>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white mb-5 leading-tight">Integrate in Minutes,<br/>Not Days.</h2>
+          <p class="text-gray-400 mb-8 leading-relaxed">A clean, versioned REST API with ready-to-paste SDK code for the most popular languages. If you can make an HTTP request, you can validate a license key.</p>
+
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-200">Single endpoint validation</p>
+                <p class="text-xs text-gray-500 mt-0.5">POST /api/v1/validate — returns status, granted, key class, and permissions in one call.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-200">Pre-built SDKs for C# and Python</p>
+                <p class="text-xs text-gray-500 mt-0.5">Drop-in files with HWID detection, retry logic, and full status mapping.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-3 h-3 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-200">Versioned &amp; documented</p>
+                <p class="text-xs text-gray-500 mt-0.5">Full API reference with request/response schemas and example payloads.</p>
+              </div>
+            </div>
+          </div>
+
+          <a href="api-docs.html"
+             class="inline-flex items-center gap-2 mt-8 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+            Read the full API docs
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </a>
+        </div>
+
+        <!-- Right: code block -->
+        <div class="fade-in-up" style="transition-delay:0.1s">
+          <div class="rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden shadow-2xl">
+            <!-- Window chrome -->
+            <div class="flex items-center gap-2 px-4 py-3 bg-gray-800/50 border-b border-gray-700/50">
+              <div class="w-3 h-3 rounded-full bg-red-500/60"></div>
+              <div class="w-3 h-3 rounded-full bg-amber-500/60"></div>
+              <div class="w-3 h-3 rounded-full bg-green-500/60"></div>
+              <span class="ml-2 text-xs text-gray-500 font-mono">client_integration.py</span>
+            </div>
+            <!-- Code -->
+            <pre class="p-5 text-sm font-mono overflow-x-auto leading-7 text-gray-300"><span class="tok-kw">from</span> <span class="tok-mod">client_integration</span> <span class="tok-kw">import</span> LicenseValidator
+
+<span class="tok-cmt"># Initialize the validator</span>
+validator <span class="tok-op">=</span> LicenseValidator(
+    base_url<span class="tok-op">=</span><span class="tok-str">"https://key.tamoza.xyz"</span>,
+    app_name<span class="tok-op">=</span><span class="tok-str">"MyApp"</span>
+)
+
+<span class="tok-cmt"># Validate a license key</span>
+result <span class="tok-op">=</span> validator.<span class="tok-fn">validate</span>(<span class="tok-str">"XXXX-YYYY-ZZZZ-WWWW"</span>)
+
+<span class="tok-kw">if</span> result.granted:
+    <span class="tok-fn">print</span>(<span class="tok-str">f"Welcome, {result.owner_name}!"</span>)
+    <span class="tok-fn">print</span>(<span class="tok-str">f"Class:  {result.key_class}"</span>)
+<span class="tok-kw">else</span>:
+    <span class="tok-fn">print</span>(<span class="tok-str">f"Denied: {result.message}"</span>)
+    <span class="tok-fn">exit</span>(<span class="tok-num">1</span>)</pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       STATS SECTION
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="stats" class="py-20 bg-gray-950 border-y border-gray-800/50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+
+        <div class="stat-card text-center p-8 rounded-2xl border border-indigo-500/10 fade-in-up">
+          <div class="text-4xl sm:text-5xl font-extrabold text-white mb-2">99.9%</div>
+          <div class="text-sm font-semibold text-indigo-400 mb-2">Uptime</div>
+          <div class="text-xs text-gray-500 leading-relaxed">Hosted on reliable cloud infrastructure with automatic recovery and zero-downtime deployments.</div>
+        </div>
+
+        <div class="stat-card text-center p-8 rounded-2xl border border-indigo-500/10 fade-in-up" style="transition-delay:0.1s">
+          <div class="text-4xl sm:text-5xl font-extrabold text-white mb-2">256-bit</div>
+          <div class="text-sm font-semibold text-indigo-400 mb-2">Encryption</div>
+          <div class="text-xs text-gray-500 leading-relaxed">All data in transit protected by TLS 1.3. JWT tokens signed with HS256, passwords hashed with bcrypt.</div>
+        </div>
+
+        <div class="stat-card text-center p-8 rounded-2xl border border-indigo-500/10 fade-in-up" style="transition-delay:0.2s">
+          <div class="text-4xl sm:text-5xl font-extrabold text-white mb-2">&lt;50ms</div>
+          <div class="text-sm font-semibold text-indigo-400 mb-2">Instant Activation</div>
+          <div class="text-xs text-gray-500 leading-relaxed">License validation completes in milliseconds. Your users won't notice the extra security layer.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CONTACT / FINAL CTA
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="contact" class="py-24 lg:py-32 bg-gray-950">
+    <div class="max-w-3xl mx-auto px-6 lg:px-8 text-center fade-in-up">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 shadow-2xl shadow-indigo-500/40 mb-8 float">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
         </svg>
       </div>
-      <h1 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">TamozaKeyGen</h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to the Admin Dashboard</p>
-    </div>
-
-    <!-- Card -->
-    <div id="loginCard"
-         class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl shadow-gray-200/60 dark:shadow-none p-8">
-
-      <!-- Error banner (hidden by default) -->
-      <div id="errorBanner"
-           class="hidden mb-5 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.551-13.021c.866-1.5 3.032-1.5 3.898 0L20.303 16.126zM12 15.75h.007v.008H12v-.008z"/>
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Ready to Get Started?</h2>
+      <p class="text-gray-400 text-lg mb-10">Log into the admin dashboard to create your first license key in under a minute.</p>
+      <a href="login.html"
+         class="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
         </svg>
-        <span id="errorText">Invalid credentials.</span>
-      </div>
-
-      <form id="loginForm" class="space-y-5" autocomplete="on" novalidate>
-
-        <!-- Username -->
-        <div>
-          <label for="username" class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-            Username
-          </label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-              </svg>
-            </span>
-            <input id="username" name="username" type="text" required
-              autocomplete="username"
-              placeholder="admin"
-              class="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
-          </div>
-        </div>
-
-        <!-- Password -->
-        <div>
-          <label for="password" class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
-            Password
-          </label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
-              </svg>
-            </span>
-            <input id="password" name="password" type="password" required
-              autocomplete="current-password"
-              placeholder="••••••••"
-              class="w-full pl-9 pr-10 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
-            <!-- Show/hide toggle -->
-            <button type="button" id="togglePassword"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
-              <svg id="eyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Submit -->
-        <button type="submit" id="loginBtn"
-            class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-1">
-          <svg id="btnSpinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-          </svg>
-          <span id="btnText">Sign In</span>
-        </button>
-
-      </form>
+        Open Admin Dashboard
+      </a>
     </div>
+  </section>
 
-    <p class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-      TamozaKeyGen v1.0 &mdash; Admin Portal
-    </p>
-  </div>
 
+  <!-- ══════════════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════════════════ -->
+  <footer class="py-10 bg-[#080c14] border-t border-gray-800/50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">TamozaKeyGen</span>
+        </a>
+
+        <!-- Links -->
+        <nav class="flex items-center gap-6 text-xs text-gray-600">
+          <a href="#features"            class="hover:text-gray-400 transition-colors">Features</a>
+          <a href="#api"                 class="hover:text-gray-400 transition-colors">API</a>
+          <a href="api-docs.html" class="hover:text-gray-400 transition-colors">Docs</a>
+          <a href="login.html"           class="hover:text-gray-400 transition-colors">Admin</a>
+        </nav>
+
+        <p class="text-xs text-gray-600">&copy; 2026 TamozaKeyGen. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════════════════════════════════════════ -->
   <script>
-    // ── Dark mode ──────────────────────────────────────────────────────────
-    const html = document.documentElement;
-    function syncIcons() {
-      const dark = html.classList.contains('dark');
-      document.getElementById('iconSun').classList.toggle('hidden', !dark);
-      document.getElementById('iconMoon').classList.toggle('hidden', dark);
-    }
-    syncIcons();
-    document.getElementById('darkToggle').addEventListener('click', () => {
-      const dark = html.classList.toggle('dark');
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
-      syncIcons();
-    });
+    // Scroll-reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
 
-    // ── Show/hide password ─────────────────────────────────────────────────
-    document.getElementById('togglePassword').addEventListener('click', () => {
-      const pw = document.getElementById('password');
-      const isText = pw.type === 'text';
-      pw.type = isText ? 'password' : 'text';
-      document.getElementById('eyeIcon').innerHTML = isText
-        ? `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>`
-        : `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>`;
-    });
-
-    // ── Login form ─────────────────────────────────────────────────────────
-    const form      = document.getElementById('loginForm');
-    const btn       = document.getElementById('loginBtn');
-    const btnText   = document.getElementById('btnText');
-    const spinner   = document.getElementById('btnSpinner');
-    const banner    = document.getElementById('errorBanner');
-    const errorText = document.getElementById('errorText');
-    const card      = document.getElementById('loginCard');
-
-    function showError(msg) {
-      errorText.textContent = msg;
-      banner.classList.remove('hidden');
-      card.classList.add('shake');
-      card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
-    }
-
-    function setLoading(loading) {
-      btn.disabled = loading;
-      spinner.classList.toggle('hidden', !loading);
-      btnText.textContent = loading ? 'Signing in…' : 'Sign In';
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      banner.classList.add('hidden');
-
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (!username || !password) {
-        showError('Please enter your username and password.');
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const body = new URLSearchParams({ username, password });
-        const res = await fetch('/api/v1/auth/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          // Store the JWT for use by app.js on the dashboard
-          localStorage.setItem('adminToken', data.access_token);
-          window.location.href = 'dashboard.html';
-        } else {
-          const err = await res.json().catch(() => ({}));
-          const detail = err.detail ?? '';
-          if (res.status === 401) {
-            showError('Incorrect username or password.');
-          } else if (res.status === 403) {
-            showError('Your account has been disabled. Contact support.');
-          } else {
-            showError(detail || `Server error (${res.status}). Please try again.`);
-          }
-        }
-      } catch (_) {
-        showError('Could not reach the server. Check your connection.');
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    // Auto-focus username on load
-    document.getElementById('username').focus();
+    // Mobile menu
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu    = document.getElementById('mobileMenu');
+    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    mobileMenu.querySelectorAll('a').forEach(link =>
+      link.addEventListener('click', () => mobileMenu.classList.add('hidden'))
+    );
   </script>
 </body>
 </html>

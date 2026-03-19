@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDK Documentation — TamozaKeyGen</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif'], mono: ['JetBrains Mono', 'ui-monospace'] } } }
+    };
+    if (localStorage.getItem('theme') !== 'light') document.documentElement.classList.add('dark');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 99px; }
+
+    /* ── Nav blur ── */
+    .nav-blur { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+
+    /* ── Sidebar active ── */
+    .toc-link { transition: color .15s, border-color .15s; }
+    .toc-link.active { color: #818cf8; border-left-color: #818cf8; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #0d1117;
+      border: 1px solid #1f2937;
+      border-radius: .75rem;
+      overflow-x: auto;
+      padding: 1.25rem 1.5rem;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: .82rem;
+      line-height: 1.75;
+      color: #e5e7eb;
+      margin: 1.25rem 0;
+      position: relative;
+    }
+    code:not(pre code) {
+      font-family: 'JetBrains Mono', ui-monospace;
+      font-size: .78rem;
+      background: #1f2937;
+      color: #a5b4fc;
+      padding: .15em .4em;
+      border-radius: .35em;
+    }
+
+    /* ── Syntax tokens ── */
+    .t-kw  { color: #c084fc; }
+    .t-str { color: #86efac; }
+    .t-fn  { color: #fde68a; }
+    .t-op  { color: #f472b6; }
+    .t-cmt { color: #4b5563; font-style: italic; }
+    .t-num { color: #fb923c; }
+    .t-cls { color: #67e8f9; }
+    .t-var { color: #e2e8f0; }
+    .t-dec { color: #f97316; }
+    .t-hdr { color: #94a3b8; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .85rem; }
+    thead tr { background: #111827; }
+    th { padding: .65rem 1rem; text-align: left; font-weight: 600; color: #9ca3af; border-bottom: 1px solid #1f2937; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #1a2030; transition: background .12s; }
+    tbody tr:hover { background: #111827; }
+    td { padding: .6rem 1rem; color: #d1d5db; vertical-align: top; }
+    td code { font-size: .75rem; }
+
+    /* ── Badges ── */
+    .badge-get    { background:#064e3b; color:#34d399; border:1px solid #065f46; }
+    .badge-post   { background:#1e3a5f; color:#60a5fa; border:1px solid #1e40af; }
+    .badge-patch  { background:#422006; color:#fb923c; border:1px solid #7c2d12; }
+    .badge-delete { background:#450a0a; color:#f87171; border:1px solid #7f1d1d; }
+
+    /* ── Section divider ── */
+    .section-divider { border-top: 1px solid #1f2937; margin: 2.5rem 0; }
+
+    /* ── Prose headings ── */
+    .prose h2 { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; margin: 2.5rem 0 1rem; padding-bottom: .5rem; border-bottom: 1px solid #1e293b; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin: 1.75rem 0 .75rem; }
+    .prose h4 { font-size: .95rem; font-weight: 600; color: #cbd5e1; margin: 1.25rem 0 .5rem; }
+    .prose p  { color: #9ca3af; line-height: 1.8; margin: .75rem 0; }
+    .prose ul { list-style: none; padding: 0; margin: .75rem 0; }
+    .prose ul li { color: #9ca3af; padding: .25rem 0 .25rem 1.25rem; position: relative; line-height: 1.7; }
+    .prose ul li::before { content: "—"; position: absolute; left: 0; color: #374151; }
+    .prose ol { padding-left: 1.5rem; margin: .75rem 0; }
+    .prose ol li { color: #9ca3af; padding: .2rem 0; line-height: 1.7; }
+    .prose blockquote { border-left: 3px solid #4f46e5; background: #0f172a; padding: .75rem 1.25rem; border-radius: 0 .5rem .5rem 0; margin: 1rem 0; }
+    .prose blockquote p { color: #94a3b8; margin: 0; font-size: .875rem; }
+    .prose a { color: #818cf8; text-decoration: none; }
+    .prose a:hover { color: #a5b4fc; text-decoration: underline; }
+
+    /* ── Checklist ── */
+    .check-item { display: flex; align-items: flex-start; gap: .6rem; padding: .35rem 0; color: #9ca3af; font-size: .875rem; }
+    .check-box  { width: 1rem; height: 1rem; border: 1px solid #374151; border-radius: .25rem; flex-shrink: 0; margin-top: .15rem; }
+
+    /* ── Flow diagram ── */
+    .flow { background: #0d1117; border: 1px solid #1f2937; border-radius: .75rem; padding: 1.25rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: .78rem; line-height: 1.8; color: #94a3b8; overflow-x: auto; }
+    .flow .flow-fn   { color: #818cf8; }
+    .flow .flow-ok   { color: #34d399; }
+    .flow .flow-err  { color: #f87171; }
+    .flow .flow-warn { color: #fbbf24; }
+    .flow .flow-sym  { color: #374151; }
+
+    /* ── Scroll reveal ── */
+    .fade-up { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       TOPBAR
+  ══════════════════════════════════════════════════════════════════ -->
+  <header class="fixed top-0 left-0 right-0 z-50 nav-blur bg-gray-950/85 border-b border-gray-800/50 h-14">
+    <div class="max-w-screen-2xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+
+      <!-- Back + Brand -->
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          Back
+        </a>
+        <div class="w-px h-4 bg-gray-700"></div>
+        <a href="index.html" class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+          </div>
+          <span class="text-sm font-semibold text-white">TamozaKeyGen</span>
+        </a>
+        <span class="text-gray-600 text-sm">/</span>
+        <span class="text-sm text-gray-400">SDK Documentation</span>
+      </div>
+
+      <!-- Right: version badge + admin link -->
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
+          API v1.0
+        </span>
+        <a href="login.html"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 text-indigo-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 text-xs font-medium transition-all duration-200">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+          Admin Login
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LAYOUT: SIDEBAR + CONTENT
+  ══════════════════════════════════════════════════════════════════ -->
+  <div class="flex max-w-screen-2xl mx-auto pt-14">
+
+    <!-- ── Sidebar ── -->
+    <aside class="hidden lg:block w-64 xl:w-72 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-gray-800/50 px-4 py-8">
+      <p class="text-xs font-semibold text-gray-600 uppercase tracking-widest px-3 mb-4">Contents</p>
+      <nav class="space-y-0.5" id="tocNav">
+        <a href="#s1"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">1. API Overview</a>
+        <a href="#s2"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">2. Request Schema</a>
+        <a href="#s3"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">3. HWID Generation</a>
+        <a href="#s31" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">3.1 Windows</a>
+        <a href="#s32" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">3.2 Linux</a>
+        <a href="#s33" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">3.3 macOS</a>
+        <a href="#s34" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">3.4 Fallback</a>
+        <a href="#s35" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">3.5 Reference Table</a>
+        <a href="#s4"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">4. Response Handling</a>
+        <a href="#s41" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">4.1 Success (200)</a>
+        <a href="#s42" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">4.2 Error Structure</a>
+        <a href="#s43" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">4.3 Status Mapping</a>
+        <a href="#s44" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">4.4 403 Parsing</a>
+        <a href="#s5"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">5. ValidationResult</a>
+        <a href="#s6"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">6. Implementation Checklist</a>
+        <a href="#s61" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">6.1 Required Enums</a>
+        <a href="#s62" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">6.2 Default Messages</a>
+        <a href="#s63" class="toc-link block px-3 py-2 pl-6 text-xs text-gray-600 hover:text-gray-400 border-l-2 border-transparent transition-all">6.3 Steps</a>
+        <a href="#s7"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">7. Security Best Practices</a>
+        <a href="#s8"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">8. Response Flow</a>
+        <a href="#s9"  class="toc-link block px-3 py-2 text-xs text-gray-500 hover:text-gray-300 border-l-2 border-transparent transition-all">9. Language Notes</a>
+      </nav>
+    </aside>
+
+    <!-- ── Main content ── -->
+    <main class="flex-1 min-w-0 px-6 lg:px-12 xl:px-16 py-12 max-w-4xl">
+      <div class="prose">
+
+        <!-- Page header -->
+        <div class="mb-12 fade-up">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium mb-4">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+            SDK Developer Documentation
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">TamozaKeyGen API Reference</h1>
+          <p class="text-gray-400 text-base leading-relaxed max-w-2xl">
+            A complete technical blueprint for building a TamozaKeyGen-compatible license validation SDK in any programming language.
+            Every section maps directly to the reference implementation in <code>scripts/client_integration.py</code>.
+          </p>
+          <div class="flex flex-wrap gap-3 mt-6">
+            <span class="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5">
+              <span class="w-2 h-2 rounded-full bg-green-500"></span>Endpoint: <code>POST /api/v1/validate</code>
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>Auth: None (public)
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>Content-Type: application/json
+            </span>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 1 — API Overview
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s1" class="fade-up">
+          <h2>1. API Overview</h2>
+          <table>
+            <thead><tr><th>Property</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td><code>Endpoint</code></td><td><code>/api/v1/validate</code></td></tr>
+              <tr><td><code>Method</code></td><td><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold badge-post">POST</span></td></tr>
+              <tr><td><code>Content-Type</code></td><td><code>application/json</code></td></tr>
+              <tr><td><code>Auth Required</code></td><td>No (public endpoint)</td></tr>
+              <tr><td><code>Timeout (recommended)</code></td><td>10 seconds</td></tr>
+            </tbody>
+          </table>
+          <h3>Full URL construction</h3>
+          <pre>{SERVER_BASE_URL}/api/v1/validate
+
+<span class="t-cmt"># Example:</span>
+https://key.tamoza.xyz/api/v1/validate</pre>
+          <blockquote><p>Strip any trailing slash from the base URL before appending the path.</p></blockquote>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 2 — Request Schema
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s2" class="fade-up">
+          <h2>2. Request Schema</h2>
+          <p>Send a JSON body with the following fields:</p>
+          <pre>{
+  <span class="t-str">"key"</span>:         <span class="t-str">"ABCD1234-EFGH5678-IJKL9012-MNOP3456"</span>,
+  <span class="t-str">"hwid"</span>:        <span class="t-str">"a3f8c2e1d4b7...f0e1d2c3b4a5f6e7d8c9b0a1"</span>,
+  <span class="t-str">"app_name"</span>:    <span class="t-str">"MyApp"</span>,
+  <span class="t-str">"region"</span>:      <span class="t-str">"US"</span>,
+  <span class="t-str">"device_name"</span>: <span class="t-str">"DESKTOP-ABC123"</span>
+}</pre>
+
+          <h3>Field Definitions</h3>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Max Length</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>key</code></td><td>String</td><td><span class="text-red-400 font-semibold">Yes</span></td><td>64</td><td>The license key string. Trim whitespace before sending.</td></tr>
+              <tr><td><code>hwid</code></td><td>String</td><td>Conditional</td><td>256</td><td>SHA-256 hex digest of hardware fingerprint. Required when HWID lock is enabled — always recommended.</td></tr>
+              <tr><td><code>app_name</code></td><td>String</td><td><span class="text-red-400 font-semibold">Yes</span></td><td>128</td><td>Application identifier. Must exactly match (case-insensitive) the name used when the key was created. Mismatch returns <code>403</code>.</td></tr>
+              <tr><td><code>region</code></td><td>String</td><td>No</td><td>128</td><td>ISO 3166-1 alpha-2 country code (e.g. <code>"US"</code>, <code>"DE"</code>). Used for analytics and fraud detection.</td></tr>
+              <tr><td><code>device_name</code></td><td>String</td><td>No</td><td>256</td><td>Human-readable device label. Displayed in the admin forensic view.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Important Rules</h3>
+          <ul>
+            <li><strong class="text-gray-300">key</strong> — call <code>.strip()</code> / <code>.Trim()</code> before including. Never send an empty key; validate locally and return <code>KEY_NOT_FOUND</code> immediately.</li>
+            <li><strong class="text-gray-300">hwid</strong> — compute once at startup and cache. HWID changes mid-session will cause mismatches.</li>
+            <li><strong class="text-gray-300">app_name</strong> — comparison is case-insensitive on the server, but send consistently for clean logs.</li>
+            <li><strong class="text-gray-300">region</strong> — omit the field entirely if unknown, rather than sending <code>null</code> or an empty string.</li>
+          </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 3 — HWID
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s3" class="fade-up">
+          <h2>3. Hardware ID (HWID) Generation</h2>
+          <p>The HWID is a <strong class="text-gray-300">64-character lowercase SHA-256 hex digest</strong> that uniquely identifies a device. Its generation algorithm is platform-specific but the final output format is always identical.</p>
+          <blockquote><p><strong>Critical:</strong> Every SDK implementation must produce the exact same HWID on the same device to avoid spurious <code>HWID_MISMATCH</code> errors. The raw string concatenation format <code>"{part1}::{part2}"</code> and SHA-256 encoding must be followed exactly.</p></blockquote>
+          <h3>Hash Function</h3>
+          <pre>HWID = lowercase_hex( SHA-256( UTF-8_bytes( raw_string ) ) )</pre>
+        </section>
+
+        <!-- 3.1 Windows -->
+        <section id="s31" class="fade-up">
+          <h3>3.1 Windows</h3>
+          <p>Data sources via WMI:</p>
+          <table>
+            <thead><tr><th>WMI Class</th><th>Property</th><th>WQL Query</th></tr></thead>
+            <tbody>
+              <tr><td><code>Win32_Processor</code></td><td><code>ProcessorId</code></td><td><code>SELECT ProcessorId FROM Win32_Processor</code></td></tr>
+              <tr><td><code>Win32_BaseBoard</code></td><td><code>SerialNumber</code></td><td><code>SELECT SerialNumber FROM Win32_BaseBoard</code></td></tr>
+              <tr><td><code>Win32_ComputerSystemProduct</code></td><td><code>UUID</code></td><td><code>SELECT UUID FROM Win32_ComputerSystemProduct</code> (fallback only)</td></tr>
+            </tbody>
+          </table>
+          <h4>Algorithm</h4>
+          <pre>cpu_id       = WMI( Win32_Processor.ProcessorId ).trim()
+board_serial = WMI( Win32_BaseBoard.SerialNumber ).trim()
+
+<span class="t-cmt">// OEM placeholder check — use UUID if serial is invalid</span>
+<span class="t-kw">if</span> board_serial is empty
+   OR board_serial.lower() == <span class="t-str">"to be filled by o.e.m."</span>
+   OR board_serial.lower() == <span class="t-str">"default string"</span>:
+    board_serial = WMI( Win32_ComputerSystemProduct.UUID ).trim()
+
+raw  = cpu_id + <span class="t-str">"::"</span> + board_serial
+hwid = sha256_hex( utf8(raw) )</pre>
+
+          <h4>Python reference</h4>
+          <pre><span class="t-kw">import</span> subprocess, hashlib
+
+<span class="t-kw">def</span> <span class="t-fn">_run_wmic</span>(query: <span class="t-cls">str</span>) -> <span class="t-cls">str</span>:
+    result = subprocess.<span class="t-fn">run</span>([<span class="t-str">"wmic"</span>] + query.<span class="t-fn">split</span>(),
+                            capture_output=<span class="t-kw">True</span>, text=<span class="t-kw">True</span>, timeout=<span class="t-num">8</span>)
+    lines = [l.<span class="t-fn">strip</span>() <span class="t-kw">for</span> l <span class="t-kw">in</span> result.stdout.<span class="t-fn">splitlines</span>() <span class="t-kw">if</span> l.<span class="t-fn">strip</span>()]
+    <span class="t-kw">return</span> lines[<span class="t-num">1</span>] <span class="t-kw">if</span> <span class="t-fn">len</span>(lines) >= <span class="t-num">2</span> <span class="t-kw">else</span> <span class="t-str">""</span>   <span class="t-cmt"># line 0 = header</span>
+
+cpu_id       = <span class="t-fn">_run_wmic</span>(<span class="t-str">"cpu get ProcessorId"</span>)
+board_serial = <span class="t-fn">_run_wmic</span>(<span class="t-str">"baseboard get SerialNumber"</span>)
+
+<span class="t-kw">if not</span> board_serial <span class="t-kw">or</span> board_serial.<span class="t-fn">lower</span>() <span class="t-kw">in</span> (<span class="t-str">"to be filled by o.e.m."</span>, <span class="t-str">"default string"</span>, <span class="t-str">""</span>):
+    board_serial = <span class="t-fn">_run_wmic</span>(<span class="t-str">"csproduct get UUID"</span>)
+
+raw  = <span class="t-str">f"<span class="t-op">{</span>cpu_id<span class="t-op">}</span>::<span class="t-op">{</span>board_serial<span class="t-op">}</span>"</span>
+hwid = hashlib.sha256(raw.<span class="t-fn">encode</span>()).<span class="t-fn">hexdigest</span>()</pre>
+        </section>
+
+        <!-- 3.2 Linux -->
+        <section id="s32" class="fade-up">
+          <h3>3.2 Linux</h3>
+          <table>
+            <thead><tr><th>Source</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>Machine ID</td><td><code>/etc/machine-id</code></td><td>Unique per-installation ID generated by systemd</td></tr>
+              <tr><td>CPU Model</td><td><code>/proc/cpuinfo</code></td><td>First <code>model name</code> line</td></tr>
+            </tbody>
+          </table>
+          <pre><span class="t-kw">import</span> hashlib
+
+machine_id = <span class="t-str">""</span>
+<span class="t-kw">with</span> <span class="t-fn">open</span>(<span class="t-str">"/etc/machine-id"</span>) <span class="t-kw">as</span> f:
+    machine_id = f.<span class="t-fn">read</span>().<span class="t-fn">strip</span>()
+
+cpu_model = <span class="t-str">""</span>
+<span class="t-kw">with</span> <span class="t-fn">open</span>(<span class="t-str">"/proc/cpuinfo"</span>) <span class="t-kw">as</span> f:
+    <span class="t-kw">for</span> line <span class="t-kw">in</span> f:
+        <span class="t-kw">if</span> line.<span class="t-fn">startswith</span>(<span class="t-str">"model name"</span>):
+            cpu_model = line.<span class="t-fn">split</span>(<span class="t-str">":"</span>, <span class="t-num">1</span>)[-<span class="t-num">1</span>].<span class="t-fn">strip</span>()
+            <span class="t-kw">break</span>
+
+raw  = <span class="t-str">f"<span class="t-op">{</span>machine_id<span class="t-op">}</span>::<span class="t-op">{</span>cpu_model<span class="t-op">}</span>"</span>
+hwid = hashlib.sha256(raw.<span class="t-fn">encode</span>()).<span class="t-fn">hexdigest</span>()</pre>
+        </section>
+
+        <!-- 3.3 macOS -->
+        <section id="s33" class="fade-up">
+          <h3>3.3 macOS</h3>
+          <p>Data source: <code>IOPlatformSerialNumber</code> from the I/O Registry.</p>
+          <pre><span class="t-kw">import</span> subprocess, hashlib
+
+result = subprocess.<span class="t-fn">run</span>(
+    [<span class="t-str">"ioreg"</span>, <span class="t-str">"-l"</span>, <span class="t-str">"-d1"</span>, <span class="t-str">"-c"</span>, <span class="t-str">"IOPlatformExpertDevice"</span>],
+    capture_output=<span class="t-kw">True</span>, text=<span class="t-kw">True</span>, timeout=<span class="t-num">8</span>
+)
+serial = <span class="t-str">""</span>
+<span class="t-kw">for</span> line <span class="t-kw">in</span> result.stdout.<span class="t-fn">splitlines</span>():
+    <span class="t-kw">if</span> <span class="t-str">"IOPlatformSerialNumber"</span> <span class="t-kw">in</span> line:
+        serial = line.<span class="t-fn">split</span>(<span class="t-str">'"'</span>)[-<span class="t-num">2</span>]
+        <span class="t-kw">break</span>
+
+raw  = <span class="t-str">f"macos::<span class="t-op">{</span>serial<span class="t-op">}</span>"</span>
+hwid = hashlib.sha256(raw.<span class="t-fn">encode</span>()).<span class="t-fn">hexdigest</span>()</pre>
+          <blockquote><p><strong>Note the prefix:</strong> macOS uses <code>"macos::"</code> as the prefix, unlike Windows and Linux. This avoids accidental HWID collisions across platforms.</p></blockquote>
+        </section>
+
+        <!-- 3.4 Fallback -->
+        <section id="s34" class="fade-up">
+          <h3>3.4 Fallback Strategy</h3>
+          <p>If OS-specific collection fails (empty result, command not found, permission denied, or unsupported OS), fall back to a hostname-based hash:</p>
+          <pre>raw  = <span class="t-str">"fallback::"</span> + <span class="t-fn">hostname</span>()
+hwid = sha256_hex( utf8(raw) )</pre>
+          <blockquote><p><strong>Warning:</strong> Hostname-based HWIDs have low uniqueness — hostnames can be changed by the user. Log a warning in your SDK when the fallback is triggered.</p></blockquote>
+          <pre><span class="t-cmt"># Validity check before using any HWID</span>
+<span class="t-kw">if not</span> hwid <span class="t-kw">or</span> <span class="t-fn">len</span>(hwid) < <span class="t-num">10</span>:
+    hwid = sha256_hex(<span class="t-str">f"fallback::<span class="t-op">{</span>hostname<span class="t-op">}</span>"</span>)</pre>
+        </section>
+
+        <!-- 3.5 Table -->
+        <section id="s35" class="fade-up">
+          <h3>3.5 HWID Reference Table</h3>
+          <table>
+            <thead><tr><th>OS</th><th>Data Sources</th><th>Raw String Format</th><th>Fallback</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td><code>Win32_Processor.ProcessorId</code> + <code>Win32_BaseBoard.SerialNumber</code></td><td><code>"{cpu_id}::{board_serial}"</code></td><td><code>"fallback::{hostname}"</code></td></tr>
+              <tr><td>Linux</td><td><code>/etc/machine-id</code> + <code>model name</code> from <code>/proc/cpuinfo</code></td><td><code>"{machine_id}::{cpu_model}"</code></td><td><code>"fallback::{hostname}"</code></td></tr>
+              <tr><td>macOS</td><td><code>IOPlatformSerialNumber</code> via <code>ioreg</code></td><td><code>"macos::{serial}"</code></td><td><code>"fallback::{hostname}"</code></td></tr>
+              <tr><td>Other</td><td>—</td><td>—</td><td><code>"fallback::{hostname}"</code></td></tr>
+            </tbody>
+          </table>
+          <p class="text-xs text-gray-600">Output for all platforms: 64-character lowercase hex string (SHA-256 of UTF-8 encoded raw string).</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 4 — Response Handling
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s4" class="fade-up">
+          <h2>4. Response Handling</h2>
+        </section>
+
+        <section id="s41" class="fade-up">
+          <h3>4.1 Success Response (HTTP 200)</h3>
+          <p>A <code>200 OK</code> response means the key passed all validation checks, but <strong class="text-yellow-400">always verify the <code>valid</code> field</strong> — a <code>200</code> with <code>"valid": false</code> must be treated as a server error.</p>
+          <pre>{
+  <span class="t-str">"valid"</span>:            <span class="t-kw">true</span>,
+  <span class="t-str">"message"</span>:          <span class="t-str">"License key is valid."</span>,
+  <span class="t-str">"is_suspicious"</span>:    <span class="t-kw">false</span>,
+  <span class="t-str">"app_name"</span>:         <span class="t-str">"MyApp"</span>,
+  <span class="t-str">"owner_name"</span>:       <span class="t-str">"John Doe"</span>,
+  <span class="t-str">"end_date"</span>:         <span class="t-str">"2027-03-18T00:00:00"</span>,
+  <span class="t-str">"key_class"</span>:        <span class="t-str">"Subscription"</span>,
+  <span class="t-str">"permission_level"</span>: <span class="t-str">"User"</span>
+}</pre>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>valid</code></td><td>Boolean</td><td>Always <code>true</code> on a genuine success. If <code>false</code> on a 200, treat as <code>SERVER_ERROR</code>.</td></tr>
+              <tr><td><code>message</code></td><td>String</td><td>Server-side message for logging. Use your SDK's own messages for display.</td></tr>
+              <tr><td><code>is_suspicious</code></td><td>Boolean</td><td><code>true</code> if the key triggered a fraud rule. The key is <strong class="text-green-400">still granted</strong>.</td></tr>
+              <tr><td><code>app_name</code></td><td>String</td><td>Application name registered on the key.</td></tr>
+              <tr><td><code>owner_name</code></td><td>String</td><td>License holder name.</td></tr>
+              <tr><td><code>end_date</code></td><td>String (ISO 8601 UTC)</td><td>Key expiry timestamp. Parse and store for offline grace-period logic.</td></tr>
+              <tr><td><code>key_class</code></td><td>String</td><td><code>Subscription</code>, <code>Trial</code>, or <code>Demo</code>. Use to adjust feature access.</td></tr>
+              <tr><td><code>permission_level</code></td><td>String</td><td><code>User</code>, <code>Admin</code>, or <code>Support</code>. Use to gate privileged features.</td></tr>
+            </tbody>
+          </table>
+          <pre><span class="t-kw">if</span> status_code == <span class="t-num">200</span>:
+    body = parse_json(response)
+    <span class="t-kw">if not</span> body.valid:
+        <span class="t-kw">return</span> SERVER_ERROR          <span class="t-cmt"># malformed server response</span>
+    <span class="t-kw">if</span> body.is_suspicious:
+        <span class="t-kw">return</span> SUSPICIOUS            <span class="t-cmt"># granted=true, flag to application</span>
+    <span class="t-kw">else</span>:
+        <span class="t-kw">return</span> GRANTED               <span class="t-cmt"># fully clean grant</span></pre>
+        </section>
+
+        <section id="s42" class="fade-up">
+          <h3>4.2 Error Response Structure</h3>
+          <p>All non-200 responses return a JSON body with exactly one field:</p>
+          <pre>{ <span class="t-str">"detail"</span>: <span class="t-str">"Human-readable error message."</span> }</pre>
+          <ul>
+            <li>Attempt to parse the response body as JSON.</li>
+            <li>Extract <code>detail</code> as a string.</li>
+            <li><strong class="text-yellow-300">Lowercase the entire <code>detail</code> string</strong> before keyword matching.</li>
+            <li>If JSON parsing fails, treat as <code>UNKNOWN</code> (or <code>SERVER_ERROR</code> for 5xx).</li>
+          </ul>
+        </section>
+
+        <section id="s43" class="fade-up">
+          <h3>4.3 Status Code Mapping</h3>
+          <p>Complete decision tree for mapping HTTP responses to SDK status values:</p>
+          <table>
+            <thead><tr><th>HTTP Status</th><th>Condition</th><th>SDK Status</th><th>granted</th></tr></thead>
+            <tbody>
+              <tr><td><code>200</code></td><td><code>valid == true</code> AND <code>is_suspicious == false</code></td><td><span class="text-green-400 font-semibold">GRANTED</span></td><td><span class="text-green-400">true</span></td></tr>
+              <tr><td><code>200</code></td><td><code>valid == true</code> AND <code>is_suspicious == true</code></td><td><span class="text-yellow-400 font-semibold">SUSPICIOUS</span></td><td><span class="text-green-400">true</span></td></tr>
+              <tr><td><code>200</code></td><td><code>valid == false</code></td><td><span class="text-red-400 font-semibold">SERVER_ERROR</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>400</code></td><td><code>"hwid"</code> in detail</td><td><span class="text-orange-400 font-semibold">HWID_MISMATCH</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>400</code></td><td>any other detail</td><td><span class="text-gray-400 font-semibold">UNKNOWN</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td><code>"expired"</code> in detail</td><td><span class="text-orange-400 font-semibold">EXPIRED</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td><code>"not yet"</code> in detail</td><td><span class="text-orange-400 font-semibold">NOT_YET_ACTIVE</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td><code>"paused"</code> in detail</td><td><span class="text-orange-400 font-semibold">PAUSED</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td><code>"hardware id"</code> or <code>"hwid"</code> in detail</td><td><span class="text-orange-400 font-semibold">HWID_MISMATCH</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td><code>"application"</code> in detail</td><td><span class="text-orange-400 font-semibold">APP_MISMATCH</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>403</code></td><td>no keyword matched</td><td><span class="text-orange-400 font-semibold">PAUSED</span> (safe fallback)</td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>404</code></td><td>any</td><td><span class="text-red-400 font-semibold">KEY_NOT_FOUND</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>422</code></td><td>any</td><td><span class="text-gray-400 font-semibold">UNKNOWN</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td><code>5xx</code></td><td>any</td><td><span class="text-red-400 font-semibold">SERVER_ERROR</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td>Network error</td><td>connection refused, DNS, timeout</td><td><span class="text-red-400 font-semibold">NETWORK_ERROR</span></td><td><span class="text-red-400">false</span></td></tr>
+              <tr><td>Other</td><td>—</td><td><span class="text-gray-400 font-semibold">UNKNOWN</span></td><td><span class="text-red-400">false</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="s44" class="fade-up">
+          <h3>4.4 403 Detail String Parsing</h3>
+          <p>The <code>403</code> status is the most nuanced. Perform <strong class="text-gray-300">case-insensitive substring matching</strong> in the exact evaluation order shown:</p>
+          <pre>detail = response.json()[<span class="t-str">"detail"</span>].<span class="t-fn">lower</span>()
+
+<span class="t-kw">if</span>   <span class="t-str">"expired"</span>     <span class="t-kw">in</span> detail  →  <span class="t-fn">EXPIRED</span>
+<span class="t-kw">elif</span> <span class="t-str">"not yet"</span>     <span class="t-kw">in</span> detail  →  <span class="t-fn">NOT_YET_ACTIVE</span>
+<span class="t-kw">elif</span> <span class="t-str">"paused"</span>      <span class="t-kw">in</span> detail  →  <span class="t-fn">PAUSED</span>
+<span class="t-kw">elif</span> <span class="t-str">"hardware id"</span> <span class="t-kw">in</span> detail  →  <span class="t-fn">HWID_MISMATCH</span>
+<span class="t-kw">elif</span> <span class="t-str">"hwid"</span>        <span class="t-kw">in</span> detail  →  <span class="t-fn">HWID_MISMATCH</span>
+<span class="t-kw">elif</span> <span class="t-str">"application"</span> <span class="t-kw">in</span> detail  →  <span class="t-fn">APP_MISMATCH</span>
+<span class="t-kw">else</span>                           →  <span class="t-fn">PAUSED</span>  <span class="t-cmt"># default fallback</span></pre>
+          <blockquote><p><strong>Order matters.</strong> Evaluate from top to bottom. The <code>PAUSED</code> fallback catches future 403 types your SDK doesn't yet recognize.</p></blockquote>
+          <h4>Reference detail strings (API v1)</h4>
+          <table>
+            <thead><tr><th>Server detail string</th><th>Matched By</th><th>Maps To</th></tr></thead>
+            <tbody>
+              <tr><td><code>"License key has expired."</code></td><td><code>"expired"</code></td><td><span class="text-orange-400">EXPIRED</span></td></tr>
+              <tr><td><code>"License key is not yet active."</code></td><td><code>"not yet"</code></td><td><span class="text-orange-400">NOT_YET_ACTIVE</span></td></tr>
+              <tr><td><code>"License key is currently paused."</code></td><td><code>"paused"</code></td><td><span class="text-orange-400">PAUSED</span></td></tr>
+              <tr><td><code>"Hardware ID mismatch. This key is locked to a different device."</code></td><td><code>"hardware id"</code></td><td><span class="text-orange-400">HWID_MISMATCH</span></td></tr>
+              <tr><td><code>"License key is not valid for this application."</code></td><td><code>"application"</code></td><td><span class="text-orange-400">APP_MISMATCH</span></td></tr>
+              <tr><td><code>"HWID is required for this license key."</code> (400)</td><td><code>"hwid"</code></td><td><span class="text-orange-400">HWID_MISMATCH</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 5 — ValidationResult
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s5" class="fade-up">
+          <h2>5. ValidationResult Object</h2>
+          <p>Every SDK must expose a result object (struct/class/record) with the following fields after a validate call:</p>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>status</code></td><td><code>ValidationStatus</code> enum</td><td>Machine-readable outcome — use for all branching logic.</td></tr>
+              <tr><td><code>message</code></td><td>String</td><td>Localizable human-readable message for display to the end user.</td></tr>
+              <tr><td><code>granted</code></td><td>Boolean</td><td><code>true</code> only for <code>GRANTED</code> and <code>SUSPICIOUS</code> — use this as the gate for application logic.</td></tr>
+              <tr><td><code>app_name</code></td><td>String?</td><td>Application name from the server response (populated on success only).</td></tr>
+              <tr><td><code>owner_name</code></td><td>String?</td><td>License holder name (populated on success only).</td></tr>
+              <tr><td><code>end_date</code></td><td>String?</td><td>ISO 8601 UTC expiry timestamp (populated on success only).</td></tr>
+              <tr><td><code>key_class</code></td><td>String?</td><td><code>Subscription</code>, <code>Trial</code>, or <code>Demo</code> — use to tailor feature set.</td></tr>
+              <tr><td><code>permission_level</code></td><td>String?</td><td><code>User</code>, <code>Admin</code>, or <code>Support</code> — use to unlock privileged features.</td></tr>
+              <tr><td><code>is_suspicious</code></td><td>Boolean</td><td><code>true</code> when status is <code>SUSPICIOUS</code>.</td></tr>
+            </tbody>
+          </table>
+          <pre><span class="t-cmt"># granted computation rule</span>
+granted = (status == <span class="t-fn">GRANTED</span> || status == <span class="t-fn">SUSPICIOUS</span>)</pre>
+          <blockquote><p><strong>Immutability:</strong> Make this object immutable/frozen after construction. It should not be modified after the validate call returns.</p></blockquote>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 6 — Checklist
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s6" class="fade-up">
+          <h2>6. SDK Implementation Checklist</h2>
+        </section>
+
+        <section id="s61" class="fade-up">
+          <h3>6.1 Required Enums</h3>
+          <p>Implement all eleven status values. Do not merge or omit any.</p>
+          <table>
+            <thead><tr><th>Enum Value</th><th>granted</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="text-green-400 font-semibold">GRANTED</span></td><td><span class="text-green-400">true</span></td><td>License is fully valid and clean.</td></tr>
+              <tr><td><span class="text-yellow-400 font-semibold">SUSPICIOUS</span></td><td><span class="text-green-400">true</span></td><td>Valid, but flagged for potential abuse — allow but optionally warn.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">EXPIRED</span></td><td><span class="text-red-400">false</span></td><td>Key has passed its <code>end_date</code>.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">NOT_YET_ACTIVE</span></td><td><span class="text-red-400">false</span></td><td>Key's <code>start_date</code> is still in the future.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">PAUSED</span></td><td><span class="text-red-400">false</span></td><td>Key was manually suspended by an admin.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">HWID_MISMATCH</span></td><td><span class="text-red-400">false</span></td><td>Request came from a different device than the key is bound to.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">APP_MISMATCH</span></td><td><span class="text-red-400">false</span></td><td><code>app_name</code> doesn't match the key's registered application.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">KEY_NOT_FOUND</span></td><td><span class="text-red-400">false</span></td><td>The key string does not exist on the server.</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">NETWORK_ERROR</span></td><td><span class="text-red-400">false</span></td><td>Could not reach the server (connection refused, DNS, timeout).</td></tr>
+              <tr><td><span class="text-red-400 font-semibold">SERVER_ERROR</span></td><td><span class="text-red-400">false</span></td><td>Server returned an unexpected or malformed response.</td></tr>
+              <tr><td><span class="text-gray-400 font-semibold">UNKNOWN</span></td><td><span class="text-red-400">false</span></td><td>Unclassified error; should be rare.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="s62" class="fade-up">
+          <h3>6.2 Default Messages</h3>
+          <p>Canonical user-facing messages to ship with your SDK. They must be overridable by the caller for localization.</p>
+          <table>
+            <thead><tr><th>Status</th><th>Default Message</th></tr></thead>
+            <tbody>
+              <tr><td><span class="text-green-400">GRANTED</span></td><td><code>"Access Granted."</code></td></tr>
+              <tr><td><span class="text-yellow-400">SUSPICIOUS</span></td><td><code>"Access Granted (activity flagged for review)."</code></td></tr>
+              <tr><td><span class="text-red-400">EXPIRED</span></td><td><code>"License Expired. Please renew your license to continue."</code></td></tr>
+              <tr><td><span class="text-red-400">NOT_YET_ACTIVE</span></td><td><code>"License Not Yet Active. Your license period has not started."</code></td></tr>
+              <tr><td><span class="text-red-400">PAUSED</span></td><td><code>"License Suspended. Contact support to reinstate your license."</code></td></tr>
+              <tr><td><span class="text-red-400">HWID_MISMATCH</span></td><td><code>"Hardware ID Mismatch. This license is bound to a different device."</code></td></tr>
+              <tr><td><span class="text-red-400">APP_MISMATCH</span></td><td><code>"Invalid Application. This license key is not registered for this application."</code></td></tr>
+              <tr><td><span class="text-red-400">KEY_NOT_FOUND</span></td><td><code>"Invalid License Key. The key you entered does not exist."</code></td></tr>
+              <tr><td><span class="text-red-400">NETWORK_ERROR</span></td><td><code>"Network Error. Could not reach the license server. Check your connection."</code></td></tr>
+              <tr><td><span class="text-red-400">SERVER_ERROR</span></td><td><code>"Server Error. The license server returned an unexpected response."</code></td></tr>
+              <tr><td><span class="text-gray-400">UNKNOWN</span></td><td><code>"Unknown Error. Please try again or contact support."</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="s63" class="fade-up">
+          <h3>6.3 Implementation Steps</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+            <div class="check-item"><div class="check-box"></div><span>HWID generation — implement all 3 OS paths + fallback</span></div>
+            <div class="check-item"><div class="check-box"></div><span>HWID caching — compute once at startup, reuse for lifetime of the validator</span></div>
+            <div class="check-item"><div class="check-box"></div><span>Input validation — return <code>KEY_NOT_FOUND</code> immediately for empty/null key</span></div>
+            <div class="check-item"><div class="check-box"></div><span>Key trimming — strip leading/trailing whitespace before sending</span></div>
+            <div class="check-item"><div class="check-box"></div><span>HTTP client — set a 10-second timeout for all requests</span></div>
+            <div class="check-item"><div class="check-box"></div><span>JSON body — set <code>Content-Type: application/json</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>200 handler — check <code>valid</code> field, then <code>is_suspicious</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>403 handler — lowercase detail, apply keyword checks in documented order</span></div>
+            <div class="check-item"><div class="check-box"></div><span>404 handler — return <code>KEY_NOT_FOUND</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>400 handler — check for <code>"hwid"</code> in detail, else <code>UNKNOWN</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>5xx handler — return <code>SERVER_ERROR</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>Network exception — catch connection errors → <code>NETWORK_ERROR</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span><code>ValidationResult</code> object — expose all 9 fields, make immutable</span></div>
+            <div class="check-item"><div class="check-box"></div><span><code>granted</code> boolean — <code>status == GRANTED || status == SUSPICIOUS</code></span></div>
+            <div class="check-item"><div class="check-box"></div><span>Default messages — ship all 11, allow override for localization</span></div>
+            <div class="check-item"><div class="check-box"></div><span><code>ValidationStatus</code> enum — implement all 11 values</span></div>
+            <div class="check-item"><div class="check-box"></div><span>Heartbeat support — optionally implement <code>POST /api/v1/heartbeat</code></span></div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 7 — Security
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s7" class="fade-up">
+          <h2>7. Security Best Practices</h2>
+
+          <h3>Network Timeout — Always Set One</h3>
+          <p>Never make an HTTP request without a timeout.</p>
+          <pre>Recommended: <span class="t-num">10</span> seconds
+Minimum:      <span class="t-num">5</span> seconds
+Maximum:     <span class="t-num">30</span> seconds <span class="t-cmt"># for poor-connectivity environments</span></pre>
+          <blockquote><p>If the request times out, return <code>NETWORK_ERROR</code> — do not retry automatically, as a blocked/slow server is often a sign of an outage.</p></blockquote>
+
+          <h3>Protecting the Server URL</h3>
+          <ul>
+            <li><strong class="text-gray-300">Obfuscate</strong> the string in compiled binaries (string splitting, XOR encoding before concatenation).</li>
+            <li><strong class="text-gray-300">Environment variables or config files</strong> for desktop tools used internally.</li>
+            <li><strong class="text-gray-300">Certificate pinning</strong> for mobile/desktop apps to prevent MITM attacks.</li>
+          </ul>
+
+          <h3>Protecting the License Key at Rest</h3>
+          <ul>
+            <li>Do <strong class="text-red-400">not</strong> store the raw license key in a plain-text config file.</li>
+            <li>Consider encrypting with a machine-specific key (DPAPI on Windows, Keychain on macOS).</li>
+            <li>Never log the full key string — use only the first 8 characters for debug logs.</li>
+          </ul>
+
+          <h3>Handling the SUSPICIOUS Flag</h3>
+          <p>When <code>is_suspicious</code> is <code>true</code>, the license is <strong class="text-green-400">still valid</strong> — <code>granted</code> is <code>true</code>.</p>
+          <table>
+            <thead><tr><th>Application Type</th><th>Recommended Action</th></tr></thead>
+            <tbody>
+              <tr><td>Low-risk (games, utilities)</td><td>Log it silently; allow full access.</td></tr>
+              <tr><td>Medium-risk (creative tools, business software)</td><td>Show an in-app warning to the user.</td></tr>
+              <tr><td>High-risk (financial, security tools)</td><td>Restrict to read-only mode; prompt user to contact support.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Anti-Tampering</h3>
+          <ul>
+            <li><strong class="text-red-400">Never</strong> branch on the <code>message</code> string — always branch on the <code>status</code> enum. Message strings may change; enum values are stable.</li>
+            <li>Do not expose detailed error messages in production UIs — show only your SDK's default messages, not raw server output.</li>
+          </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 8 — Flow Diagram
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s8" class="fade-up">
+          <h2>8. Complete Response Flow</h2>
+          <div class="flow">
+<span class="flow-fn">validate</span>(key, region?)
+        │
+        ├── key is null/empty?
+        │       └── <span class="flow-err">return KEY_NOT_FOUND</span> (no network call)
+        │
+        ├── Build JSON payload { key, hwid, app_name, region? }
+        │
+        ├── <span class="flow-fn">POST /api/v1/validate</span>  (timeout: 10s)
+        │
+        ├── Connection error / timeout?
+        │       └── <span class="flow-err">return NETWORK_ERROR</span>
+        │
+        ├── HTTP 200?
+        │       ├── Parse JSON body
+        │       │       └── Parse fails?  → <span class="flow-err">return SERVER_ERROR</span>
+        │       ├── body.valid == false?  → <span class="flow-err">return SERVER_ERROR</span>
+        │       ├── body.is_suspicious?   → <span class="flow-warn">return SUSPICIOUS</span> (granted=true)
+        │       └── else                 → <span class="flow-ok">return GRANTED</span> (granted=true)
+        │
+        ├── HTTP 400?
+        │       ├── "hwid" in detail?  → <span class="flow-warn">return HWID_MISMATCH</span>
+        │       └── else               → <span class="flow-err">return UNKNOWN</span>
+        │
+        ├── HTTP 403?
+        │       ├── "expired"      in detail?  → <span class="flow-err">return EXPIRED</span>
+        │       ├── "not yet"      in detail?  → <span class="flow-err">return NOT_YET_ACTIVE</span>
+        │       ├── "paused"       in detail?  → <span class="flow-err">return PAUSED</span>
+        │       ├── "hardware id"  in detail?  → <span class="flow-warn">return HWID_MISMATCH</span>
+        │       ├── "hwid"         in detail?  → <span class="flow-warn">return HWID_MISMATCH</span>
+        │       ├── "application"  in detail?  → <span class="flow-warn">return APP_MISMATCH</span>
+        │       └── no match                   → <span class="flow-err">return PAUSED</span> (safe fallback)
+        │
+        ├── HTTP 404?
+        │       └── <span class="flow-err">return KEY_NOT_FOUND</span>
+        │
+        ├── HTTP 5xx?
+        │       └── <span class="flow-err">return SERVER_ERROR</span>
+        │
+        └── Any other status?
+                └── <span class="flow-err">return UNKNOWN</span>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 9 — Language Notes
+        ═══════════════════════════════════════════════════════ -->
+        <section id="s9" class="fade-up">
+          <h2>9. Language-Specific Notes</h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+            <!-- PHP -->
+            <div class="p-5 rounded-xl bg-gray-900/60 border border-gray-800">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">PHP</span>
+                <span class="text-sm font-semibold text-gray-200">PHP</span>
+              </div>
+              <ul>
+                <li>Use <code>curl</code> or Guzzle. Set <code>CURLOPT_TIMEOUT</code> to <code>10</code>.</li>
+                <li>Use <code>hash('sha256', $raw)</code> for HWID.</li>
+                <li>Parse with <code>json_decode($response, true)</code>. Check <code>$body['valid']</code> before <code>$body['is_suspicious']</code>.</li>
+              </ul>
+            </div>
+
+            <!-- C++ -->
+            <div class="p-5 rounded-xl bg-gray-900/60 border border-gray-800">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center text-xs font-bold text-cyan-400">C++</span>
+                <span class="text-sm font-semibold text-gray-200">C++</span>
+              </div>
+              <ul>
+                <li>Use <code>libcurl</code> with <code>CURLOPT_TIMEOUT_MS</code> set to <code>10000</code>.</li>
+                <li>Use OpenSSL's <code>EVP_DigestUpdate</code> / SHA-256 for HWID.</li>
+                <li>Use <code>nlohmann/json</code> or <code>rapidjson</code> for JSON parsing.</li>
+              </ul>
+            </div>
+
+            <!-- Java / Kotlin -->
+            <div class="p-5 rounded-xl bg-gray-900/60 border border-gray-800">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-orange-500/15 border border-orange-500/20 flex items-center justify-center text-xs font-bold text-orange-400">JVM</span>
+                <span class="text-sm font-semibold text-gray-200">Java / Kotlin</span>
+              </div>
+              <ul>
+                <li>Use <code>HttpClient</code> (Java 11+) or OkHttp. Set 10s connect + read timeouts.</li>
+                <li>Use <code>MessageDigest.getInstance("SHA-256")</code> for HWID.</li>
+                <li>Use Gson or Jackson for JSON deserialization.</li>
+              </ul>
+            </div>
+
+            <!-- Go -->
+            <div class="p-5 rounded-xl bg-gray-900/60 border border-gray-800">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-teal-500/15 border border-teal-500/20 flex items-center justify-center text-xs font-bold text-teal-400">Go</span>
+                <span class="text-sm font-semibold text-gray-200">Go</span>
+              </div>
+              <ul>
+                <li>Use <code>net/http</code> with <code>http.Client{Timeout: 10 * time.Second}</code>.</li>
+                <li>Use <code>crypto/sha256</code> for HWID generation.</li>
+                <li>Use <code>encoding/json</code> for response parsing.</li>
+              </ul>
+            </div>
+
+            <!-- Unity / C# -->
+            <div class="p-5 rounded-xl bg-gray-900/60 border border-gray-800 sm:col-span-2">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-violet-500/15 border border-violet-500/20 flex items-center justify-center text-xs font-bold text-violet-400">Unity</span>
+                <span class="text-sm font-semibold text-gray-200">Unity (C#)</span>
+              </div>
+              <ul>
+                <li>The provided <code>client_integration.cs</code> is compatible with Unity .NET Standard 2.1+.</li>
+                <li>Replace <code>System.Management</code> WMI calls with <code>UnityEngine.SystemInfo.deviceUniqueIdentifier</code> for a stable per-device HWID.</li>
+                <li>Use <code>UnityEngine.Networking.UnityWebRequest</code> instead of <code>HttpClient</code> if required by the build target.</li>
+              </ul>
+            </div>
+
+          </div>
+
+          <p class="text-xs text-gray-600 mt-8 pb-2">
+            This document reflects the TamozaKeyGen API as implemented in <code>scripts/client_integration.py</code> (reference SDK).
+            For the admin management API, see <a href="API.md" target="_blank">API.md</a>.
+          </p>
+        </section>
+
+      </div><!-- /prose -->
+    </main>
+
+  </div><!-- /layout -->
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════════════ -->
+  <footer class="border-t border-gray-800/50 bg-[#080c14] py-8 mt-8">
+    <div class="max-w-screen-2xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
+      <a href="index.html" class="flex items-center gap-2 hover:text-gray-400 transition-colors">
+        <div class="w-5 h-5 rounded bg-indigo-600 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+        </div>
+        TamozaKeyGen
+      </a>
+      <span>&copy; 2026 TamozaKeyGen. All rights reserved.</span>
+    </div>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ── Scroll-reveal ─────────────────────────────────────────────
+    const reveal = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => reveal.observe(el));
+
+    // ── TOC active link highlight ──────────────────────────────────
+    const sections = document.querySelectorAll('section[id]');
+    const tocLinks = document.querySelectorAll('.toc-link');
+
+    const tocObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach(l => l.classList.remove('active'));
+          const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+          if (active) {
+            active.classList.add('active');
+            active.scrollIntoView({ block: 'nearest' });
+          }
+        }
+      });
+    }, { rootMargin: '-14px 0px -80% 0px' });
+
+    sections.forEach(s => tocObserver.observe(s));
+  </script>
+</body>
+</html>
