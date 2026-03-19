@@ -73,4 +73,3 @@ TamozaKeyGen/
 | `requirements.txt` | Python dependency manifest — pins FastAPI, Uvicorn, SQLAlchemy, PyMySQL, python-jose, passlib, bcrypt 4.0.1, pydantic, and requests. |
 | `SETUP.md` | Full installation and configuration guide — step-by-step setup for Windows and Linux, environment variable reference, first-run walkthrough, production hardening (workers, systemd service, nginx reverse proxy, CORS restriction), and a troubleshooting section. |
 | `tree.md` | This file — project directory structure and file descriptions. |
-
