@@ -10,6 +10,7 @@ POST /api/v1/validate
       5. Suspicious-activity detection (region changes > 3 in 1 hour)
 """
 
+import ipaddress
 import threading
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -23,26 +24,55 @@ from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import LicenseKey, LoginEvent
-import ipaddress
+
+# Simple in-memory cache — avoids hammering geo-IP APIs on repeat logins
+_region_cache: dict[str, str] = {}
+
 
 def _lookup_region(ip: str) -> Optional[str]:
     """Resolve a country name from an IP. Private IPs return 'Local Network'."""
+    if not ip or ip in ("unknown", "localhost"):
+        return None
+
+    if ip in ("127.0.0.1", "::1"):
+        return "Local Network"
+
     try:
-        if not ip or ip in ("unknown", "127.0.0.1", "::1"):
-            return None
-        # Private/LAN IPs (192.168.x.x, 10.x.x.x, 172.16.x.x ...) → لا يمكن geo-locate-ها
-        try:
-            if ipaddress.ip_address(ip).is_private:
-                return "Local Network"
-        except ValueError:
-            pass
-        resp = _requests.get(f"https://ipapi.co/{ip}/country_name/", timeout=3)
+        if ipaddress.ip_address(ip).is_private:
+            return "Local Network"
+    except ValueError:
+        return None
+
+    # Return cached result if available
+    if ip in _region_cache:
+        return _region_cache[ip]
+
+    # Primary: ip-api.com — free, no key, structured JSON, 45 req/min
+    try:
+        resp = _requests.get(
+            f"http://ip-api.com/json/{ip}?fields=country,status",
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get("status") == "success" and data.get("country"):
+                _region_cache[ip] = data["country"]
+                return data["country"]
+    except Exception:
+        pass
+
+    # Fallback: ipapi.co
+    try:
+        resp = _requests.get(f"https://ipapi.co/{ip}/country_name/", timeout=5)
         if resp.status_code == 200:
             text = resp.text.strip()
-            if text and text.lower() not in ("undefined", "", "none", "reserved", "private"):
+            # Guard against JSON error bodies (e.g. rate-limit messages)
+            if text and not text.startswith("{") and text.lower() not in ("undefined", "", "none", "reserved", "private"):
+                _region_cache[ip] = text
                 return text
     except Exception:
         pass
+
     return None
 
 # ---------------------------------------------------------------------------
