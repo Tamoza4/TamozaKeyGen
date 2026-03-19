@@ -23,17 +23,23 @@ from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import LicenseKey, LoginEvent
-
+import ipaddress
 
 def _lookup_region(ip: str) -> Optional[str]:
-    """Resolve a country name from an IP via ipapi.co. Silently returns None on any failure."""
+    """Resolve a country name from an IP. Private IPs return 'Local Network'."""
     try:
         if not ip or ip in ("unknown", "127.0.0.1", "::1"):
             return None
+        # Private/LAN IPs (192.168.x.x, 10.x.x.x, 172.16.x.x ...) → لا يمكن geo-locate-ها
+        try:
+            if ipaddress.ip_address(ip).is_private:
+                return "Local Network"
+        except ValueError:
+            pass
         resp = _requests.get(f"https://ipapi.co/{ip}/country_name/", timeout=3)
         if resp.status_code == 200:
             text = resp.text.strip()
-            if text and text.lower() not in ("undefined", "", "none"):
+            if text and text.lower() not in ("undefined", "", "none", "reserved", "private"):
                 return text
     except Exception:
         pass
