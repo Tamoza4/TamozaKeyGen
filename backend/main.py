@@ -104,16 +104,24 @@ app = FastAPI(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CORS — restrict origins in production via CORS_ORIGINS env var
+# CORS — allow all origins so any browser-based or SDK client can reach the API.
+# Admin endpoints are still protected by JWT; opening CORS here does not weaken
+# security because Bearer-token auth is enforced at the route level.
+# Override via CORS_ORIGINS env-var (comma-separated) if you need to restrict.
 # ─────────────────────────────────────────────────────────────────────────────
 
-_origins_env = os.getenv("CORS_ORIGINS", "http://localhost,http://127.0.0.1")
-origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
+_origins_env = os.getenv("CORS_ORIGINS", "*")
+if _origins_env == "*":
+    origins = ["*"]
+else:
+    origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins     = origins,
-    allow_credentials = True,
+    # credentials (cookies) cannot be used with allow_origins=["*"];
+    # the admin panel uses Authorization: Bearer (localStorage), so this is fine.
+    allow_credentials = False,
     allow_methods     = ["*"],
     allow_headers     = ["*"],
 )
