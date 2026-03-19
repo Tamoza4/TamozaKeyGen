@@ -4,6 +4,11 @@ A self-hosted, full-stack license key management system built with **FastAPI**, 
 
 ---
 
+## Screenshots
+
+> _Add your own screenshots here._
+
+---
 
 ## Features
 
@@ -59,7 +64,7 @@ Both SDKs expose `ValidationResult` with `status`, `granted`, `key_class`, `perm
 ### 1. Clone
 
 ```bash
-git clone https://github.com/Tamoza4/TamozaKeyGen.git
+git clone https://github.com/your-username/TamozaKeyGen.git
 cd TamozaKeyGen
 ```
 
