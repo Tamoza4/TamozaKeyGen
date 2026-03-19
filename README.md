@@ -71,24 +71,28 @@ uv venv .venv
 uv pip install -r requirements.txt
 
 # Or with pip
-python -m venv .venv
-source .venv/bin/activate        # Linux/macOS
-.\.venv\Scripts\activate         # Windows
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
+pip install pymysql cryptography
 ```
 
 ### 3. Create the Database
 
 ```sql
-CREATE DATABASE tamozakeygen CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# This will create the database and the specific user with proper privileges
+sudo mysql -u root -e "CREATE DATABASE IF NOT EXISTS tamozakeygen CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+sudo mysql -u root -e "CREATE USER IF NOT EXISTS 'tamoza_admin'@'localhost' IDENTIFIED BY 'Tamoza_Admin_2026_Secure_Pass!';"
+sudo mysql -u root -e "GRANT ALL PRIVILEGES ON tamozakeygen.* TO 'tamoza_admin'@'localhost'; FLUSH PRIVILEGES;"
 ```
 
 ### 4. Run
 
 ```bash
 # Linux / macOS
-export DATABASE_URL="mysql+pymysql://root:@localhost:3306/tamozakeygen"
-export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+export DATABASE_URL='mysql+pymysql://tamoza_admin:Tamoza_Admin_2026_Secure_Pass!@localhost:3306/tamozakeygen'
+export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
 .venv/bin/uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
 # Windows (PowerShell)
