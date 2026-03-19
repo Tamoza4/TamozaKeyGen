@@ -19,9 +19,7 @@ TamozaKeyGen/
 │   ├── client_integration.cs
 │   ├── client_integration.py
 │   └── run_client.bat
-├── API.md
 ├── API_Documentation.md
-├── Plan.md
 ├── README.md
 ├── requirements.txt
 ├── SETUP.md
@@ -70,10 +68,9 @@ TamozaKeyGen/
 
 | File | Description |
 |------|-------------|
-| `API.md` | Complete admin REST API reference — documents every endpoint with method, path, request body, response schema, authentication requirements, and example payloads. |
 | `API_Documentation.md` | Client SDK integration guide — explains the validation lifecycle, all `ValidationStatus` values, the success response fields (`key_class`, `permission_level`), error mapping, the SDK result object contract, and the implementation checklist for new SDK targets. |
-| `Plan.md` | Original project planning document — outlines the intended feature set, data model design decisions, and API surface. |
 | `README.md` | GitHub project overview — features list, tech stack, quick-start commands, project structure, API overview table, SDK usage examples, data model summary, environment variables, and security notes. |
 | `requirements.txt` | Python dependency manifest — pins FastAPI, Uvicorn, SQLAlchemy, PyMySQL, python-jose, passlib, bcrypt 4.0.1, pydantic, and requests. |
 | `SETUP.md` | Full installation and configuration guide — step-by-step setup for Windows and Linux, environment variable reference, first-run walkthrough, production hardening (workers, systemd service, nginx reverse proxy, CORS restriction), and a troubleshooting section. |
 | `tree.md` | This file — project directory structure and file descriptions. |
+
